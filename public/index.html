@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chat</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha512-v8ng/uGxkge3d1IJuEo6dJP8JViyvms0cly9pnbfRxT6/31c3dRWxIiwGnMSWwZjHKOuY3EVmijs7k1jz/9bLA==" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="chat">
+        
+        <header>
+            <input type="text" name="username" placeholder="Username" value="Username">
+        </header>
+
+
+
+        <div id="messages">
+
+        </div>
+
+        <div class="send">
+            <input type="text" id="message" name="message" placeholder="Message">
+            <button type="submit">></button>
+        </div>
+
+    </form>
+</body>
+
+<script>
+    var socket = io('http://localhost:3000')
+    function renderMessage(message) {
+        document.getElementById('messages').innerHTML += `
+        <div class="message"><strong>${message.author}</strong> ${message.message}</div>`
+    }
+
+    socket.on('receivedMessage', function(message) {
+        renderMessage(message)
+    })
+
+    socket.on('previousMessages', (messages) => {
+        for(message of messages) {
+            renderMessage(message)
+        }
+    })
+
+    $('#chat').submit(function(event) {
+        event.preventDefault()
+        var author = document.querySelector('input[name=username]').value
+        var message = document.getElementById('message').value
+
+        console.log(author)
+
+
+        if(author.length != '' && message.lenght != '') {
+            var messageObject  = {
+                author: author,
+                message: message,
+            }
+
+            renderMessage(messageObject)
+
+            socket.emit('sendMessage', messageObject)
+        }
+    })
+</script>
+</html>
